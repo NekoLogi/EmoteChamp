@@ -8,7 +8,7 @@ public class Main {
     public static void main(String[] args) throws IOException {
         String filePath = null;
         try {
-            var html = new HtmlGenerator("C:\\Users\\nekol\\Documents");
+            var html = new HtmlGenerator("");
             filePath =  html.generate();
         } catch (Exception err) {
             System.out.println(err.getMessage());
