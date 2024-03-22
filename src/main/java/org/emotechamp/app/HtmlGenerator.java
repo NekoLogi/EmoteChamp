@@ -37,6 +37,16 @@ public class HtmlGenerator {
         html.append("</html>");
 
         createHtmlFile(html.toString());
+        var utils = new Utils();
+        utils.generateCSS(path);
+        utils.generateJS(path);
+        if (!new File(path + "/default.png").exists()) {
+            System.out.println();
+            System.out.println("'default.png' doesn't exist in :" + path);
+            System.out.println("If you want a greenscreen, add a png into this path and name it 'default.png'");
+            System.out.println();
+        }
+
         return path + "/index.html";
     }
 
