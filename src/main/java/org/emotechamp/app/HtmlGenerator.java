@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.Scanner;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -13,7 +14,7 @@ public class HtmlGenerator {
     private String path = "/assets";
 
     public HtmlGenerator(String dirPath) throws Exception {
-        path = dirPath;
+        path = dirPath + path;
 
         var dir = new File(path);
         if (!dir.exists()) {
@@ -23,7 +24,7 @@ public class HtmlGenerator {
     }
 
 
-    public boolean generate() throws Exception {
+    public String generate() throws Exception {
         var header = new Header(path);
         var body = new Body(path);
 
@@ -32,17 +33,16 @@ public class HtmlGenerator {
         html.append("<html>\n");
         for (var content : header.content)
             html.append(content).append("\n");
-        for (var content : body.content)
-            html.append(content).append("\n");
+        html.append(body.content).append("\n");
         html.append("</html>");
 
         createHtmlFile(html.toString());
-        return true;
+        return path + "/index.html";
     }
 
     private void createHtmlFile(String content) throws Exception {
         try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter(path));
+            BufferedWriter writer = new BufferedWriter(new FileWriter(path + "/index.html"));
             writer.write(content);
             writer.close();
         } catch (Exception err) {
@@ -59,12 +59,7 @@ public class HtmlGenerator {
         public Header(String dirPath) throws Exception {
             path = dirPath + path;
 
-            var dir = new File(path);
-            if (!dir.exists()) {
-                if (!dir.mkdirs())
-                    throw new Exception("Failed to Create directory: " + path);
-                newHeader();
-            }
+            newHeader();
             content = getHeader();
         }
 
@@ -105,18 +100,80 @@ public class HtmlGenerator {
     }
 
     private class Body {
-        public String[] content = null;
+        public String content = null;
 
         private String path = "/media";
 
         public Body(String dirPath) throws Exception {
             path = dirPath + path;
+            System.out.println("You can add emotes and sounds at: " + path);
+            System.out.println("Emotes and sound must have the same name!");
 
             var dir = new File(path);
             if (!dir.exists()) {
                 if (!dir.mkdirs())
                     throw new Exception("Failed to Create directory: " + path);
             }
+            content = generateBody();
+        }
+
+        private String generateBody() {
+            var builder = new StringBuilder();
+
+            builder.append("<body>\n");
+            builder.append("<img id=\"preview\" src=\"default.png\" height=\"500px\" width=\"500px\" onerror=\"stopAudio()\"/><br/>\n");
+            builder.append("<button id=\"audio-controller\" type=\"button\" onclick=\"stopAudio()\">Stop Sound</button>\n");
+            builder.append("<section id=\"emotes\">\n");
+            for (var emote : getEmotes())
+                builder.append(emote.content);
+            builder.append("</section>\n");
+            builder.append("</body>\n");
+
+            return builder.toString();
+        }
+
+        private Emote[] getEmotes() {
+            File folder = new File(path);
+            File[] files = folder.listFiles();
+
+            var emotes = new ArrayList<String>();
+            var sounds = new ArrayList<String>();
+            for (File value : Objects.requireNonNull(files)) {
+                String file = value.getName();
+                String fileEnding = file.split("\\.")[1];
+                switch (fileEnding.toLowerCase()) {
+                    case "png", "jpeg", "jpg", "gif", "svg":
+                        emotes.add(file);
+                        break;
+                    case "mp3", "wav", "m4a":
+                        sounds.add(file);
+                        break;
+                }
+            }
+            var newEmotes = new ArrayList<Emote>();
+            for (var emote : emotes) {
+                String result = getEmoteSound(emote.split("\\.")[0], sounds.toArray(new String[0]));
+                var content = getContent(emote, result);
+                newEmotes.add(new Emote(emote, !result.isEmpty(), content));
+            }
+
+            return newEmotes.toArray(new Emote[0]);
+        }
+
+        private String getContent(String emote, String sound) {
+            return "<div class=\"emote-container\" onclick=\"switchEmote(this)\">\n" +
+                    String.format("<img class=\"emote\" src=\"%s\" height=\"70px\" width=\"70px\"/>\n", path + "/" + emote) +
+                    String.format("<audio class=\"sound\" src=\"%s\"></audio>\n", sound.isEmpty() ? "" : path + "/" + sound) +
+                    String.format("<p class=\"emote-title\">%s</p>\n", emote.split("\\.")[0]) +
+                    "</div>\n";
+        }
+
+        private String getEmoteSound(String emote, String[] sounds) {
+            for (var sound : sounds) {
+                if (Objects.equals(sound.split("\\.")[0], emote))
+                    return sound;
+            }
+            return "";
         }
     }
 }
