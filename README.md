@@ -25,7 +25,7 @@ It is pretty simple.
    - Right-click on the source and press the 'Interact' option.
    - Go to the preview window and press on the pointing-finger icon on the bottom.
 Now a window should pop up and you should be able to interact with it.
-## Problem solving
+# Problem solving
 ### Browser source didn't refresh the new changes.
 Try to delete the browser source cache.
 1. Go to sources in OBS.
