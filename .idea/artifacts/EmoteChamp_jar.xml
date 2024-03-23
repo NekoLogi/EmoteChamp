@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="EmoteChamp:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/EmoteChamp_jar</output-path>
+    <root id="archive" name="EmoteChamp.jar">
+      <element id="module-output" name="EmoteChamp" />
+    </root>
+  </artifact>
+</component>

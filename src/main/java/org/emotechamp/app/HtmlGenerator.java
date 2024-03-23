@@ -40,12 +40,6 @@ public class HtmlGenerator {
         var utils = new Utils();
         utils.generateCSS(path);
         utils.generateJS(path);
-        if (!new File(path + "/default.png").exists()) {
-            System.out.println();
-            System.out.println("'default.png' doesn't exist in :" + path);
-            System.out.println("If you want a greenscreen, add a png into this path and name it 'default.png'");
-            System.out.println();
-        }
 
         return path + "/index.html";
     }
@@ -112,17 +106,18 @@ public class HtmlGenerator {
     private class Body {
         public String content = null;
 
-        private String path = "/media";
+        private final String relativePath = "media";
+        private String absolutePath = null;
 
         public Body(String dirPath) throws Exception {
-            path = dirPath + path;
-            System.out.println("You can add emotes and sounds at: " + path);
+            absolutePath = dirPath + "/" + relativePath;
+            System.out.println("You can add emotes and sounds at: " + absolutePath);
             System.out.println("Emotes and sound must have the same name!");
 
-            var dir = new File(path);
+            var dir = new File(absolutePath);
             if (!dir.exists()) {
                 if (!dir.mkdirs())
-                    throw new Exception("Failed to Create directory: " + path);
+                    throw new Exception("Failed to Create directory: " + absolutePath);
             }
             content = generateBody();
         }
@@ -131,7 +126,7 @@ public class HtmlGenerator {
             var builder = new StringBuilder();
 
             builder.append("<body>\n");
-            builder.append("<img id=\"preview\" src=\"default.png\" height=\"500px\" width=\"500px\" onerror=\"stopAudio()\"/><br/>\n");
+            builder.append("<img id=\"preview\" src=\"\" height=\"500px\" width=\"500px\" onerror=\"stopAudio()\"/><br/>\n");
             builder.append("<button id=\"audio-controller\" type=\"button\" onclick=\"stopAudio()\">Stop Sound</button>\n");
             builder.append("<section id=\"emotes\">\n");
             for (var emote : getEmotes())
@@ -143,7 +138,7 @@ public class HtmlGenerator {
         }
 
         private Emote[] getEmotes() {
-            File folder = new File(path);
+            File folder = new File(absolutePath);
             File[] files = folder.listFiles();
 
             var emotes = new ArrayList<String>();
@@ -172,8 +167,8 @@ public class HtmlGenerator {
 
         private String getContent(String emote, String sound) {
             return "<div class=\"emote-container\" onclick=\"switchEmote(this)\">\n" +
-                    String.format("<img class=\"emote\" src=\"%s\" height=\"70px\" width=\"70px\"/>\n", path + "/" + emote) +
-                    String.format("<audio class=\"sound\" src=\"%s\"></audio>\n", sound.isEmpty() ? "" : path + "/" + sound) +
+                    String.format("<img class=\"emote\" src=\"%s\" height=\"70px\" width=\"70px\"/>\n", relativePath + "/" + emote) +
+                    String.format("<audio class=\"sound\" src=\"%s\"></audio>\n", sound.isEmpty() ? "" : relativePath + "/" + sound) +
                     String.format("<p class=\"emote-title\">%s</p>\n", emote.split("\\.")[0]) +
                     "</div>\n";
         }
